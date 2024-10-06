@@ -1,0 +1,76 @@
+--Abaixo estará a Lib da nossa Ui
+
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7yhx/kwargs_Ui_Library/main/source.lua"))()
+
+local UI = Lib:Create{
+    Theme = "Dark", -- or any other theme
+    Size = UDim2.new(0, 555, 0, 400) -- default
+ }
+ 
+ local Main = UI:Tab{
+    Name = "Inicio"
+ }
+ 
+ local Divider = Main:Divider{
+    Name = "Inicio shit"
+ }
+ 
+ local QuitDivider = Main:Divider{
+    Name = "Sair"
+ }
+
+ -- Configurações do Aim Bot
+local aimBotEnabled = false
+local aimButton = Enum.UserInputType.MouseButton2 -- Botão direito do mouse
+
+-- Função para encontrar o jogador mais próximo
+local function getClosestPlayer()
+    local players = game:GetService("Players")
+    local localPlayer = players.LocalPlayer
+    local mouse = localPlayer:GetMouse()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in pairs(players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPos = player.Character.HumanoidRootPart.Position
+            local distance = (targetPos - localPlayer.Character.HumanoidRootPart.Position).magnitude
+
+            if distance < shortestDistance then
+                shortestDistance = distance
+                closestPlayer = player
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- Função para mirar no jogador mais próximo
+local function aimAt(target)
+    local localPlayer = game:GetService("Players").LocalPlayer
+    local mouse = localPlayer:GetMouse()
+    local camera = workspace.CurrentCamera
+
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPos = target.Character.HumanoidRootPart.Position
+        local direction = (targetPos - camera.CFrame.Position).unit
+        local newCFrame = CFrame.new(camera.CFrame.Position, camera.CFrame.Position + direction)
+        camera.CFrame = newCFrame
+    end
+end
+
+-- Evento para ativar/desativar o Aim Bot
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.UserInputType == aimButton then
+        aimBotEnabled = not aimBotEnabled
+    end
+end)
+
+-- Loop principal do Aim Bot
+game:GetService("RunService").RenderStepped:Connect(function()
+    if aimBotEnabled then
+        local closestPlayer = getClosestPlayer()
+        aimAt(closestPlayer)
+    end
+end)
